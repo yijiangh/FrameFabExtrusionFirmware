@@ -8,16 +8,12 @@ Design by Yu Lei for MPP 3DP industry
 // inculding Pin direction, steps, and enable
 // Motors are controlled by a trimpot for speed, a buttion for On/Off and a button for direction
 
-#define MotorDir_A      6
-#define MotorStp_A      5
-#define MotorEna_A      4
-#define MotorStart_A    11
-#define MotorInvert_A   10
-#define UrInv           8
-#define UrStart         9
+#include <array>
+#include <Bounce2.h>
+//#include "Options.h"
+#include "Pins.h"
+#include "Stepper.h"
 
-#define S_LED1          3
-#define S_LED2          2
 
 // values for status control
 int ButtonEnaVal_A    = 0;
@@ -39,11 +35,93 @@ int MotorInv_A        = 1;
 int MS_Button = 0;
 int MS_Ur     = 0;
 
-//int sp_param = 200;
+// MODE INITIALIZATION
+int mode = TEMP_MODE;
+std::array<int, 4> modeVal = { TEMP_VAL, EXTRUDE_VAL, FAN_VAL, SERVO_VAL };
+std::array<int, 4> modeMin = { TEMP_MIN, EXTRUDE_MIN, FAN_MIN, SERVO_MIN };
+std::array<int, 4> modeMax = { TEMP_MAX, EXTRUDE_MAX, FAN_MAX, SERVO_MAX };
+std::array<int, 4> modeHue = { TEMP_HUE, EXTRUDE_HUE, FAN_HUE, SERVO_HUE };
 
-//int S_LED3 = 9;
-//int S_LED4 = 10;
-//int S_LED5 = 11;
+// Retract duration in us should be retract length (mm) divided by retract speed (mm per s) * 1E3f
+const int RETRACT_DURATION = (int)(1E3f * RETRACT_LENGTH / RETRACT_SPEED);
+
+// OBJECTS
+Stepper stepper(
+	STEP_PIN,
+	DIR_PIN,
+	MSTEP_PIN,
+	MM_PER_STEP * MM_OUT_OVER_IN);
+
+// KUKA Inputs
+// Treat them as switches to be debounced
+Bounce KUKAIN1 = Bounce();
+Bounce KUKAIN2 = Bounce();
+
+// STATE VARIABLES
+bool extruding = false;
+bool retracting = false;
+bool btnHeld = false;
+long lastBtnPress;
+elapsedMillis sinceRetract;
+
+void updateMode(int _mode = mode) 
+{
+	switch (_mode) 
+	{
+	case EXTRUDE_MODE:
+		if (!retracting) {
+			// Don't change speed when it's retracting, when it stops retracting then this will be called again.
+			stepper.setSpeed(modeVal[EXTRUDE_MODE] / 10.0);
+		}
+		break;
+	}
+}
+
+void checkKUKA() 
+{
+	if (KUKAIN1.update()) 
+	{
+		if (KUKAIN1.read()) 
+		{ 
+			startExtrude(); 
+		}
+		else 
+		{ 
+			startRetract(); 
+		}
+	}
+}
+
+void startExtrude() 
+{
+	stopRetract(); // if at all
+	extruding = true;
+	digitalWrite(EXT_LED, HIGH);
+	stepper.enable();
+}
+
+void startRetract() 
+{
+	extruding = false;
+	retracting = true;
+	digitalWrite(EXT_LED, LOW);
+	digitalWrite(RET_LED, HIGH);
+	stepper.setSpeed(RETRACT_SPEED);
+	stepper.setDir(0);
+	stepper.enable();
+	sinceRetract = 0;
+}
+
+void stopRetract() 
+{
+	if (retracting) {
+		retracting = false;
+		digitalWrite(RET_LED, LOW);
+		stepper.setDir(1);
+		updateMode(EXTRUDE_MODE);
+		stepper.disable();
+	}
+}
 
 void setup() {
   //Serial.begin(9600);
@@ -59,9 +137,28 @@ void setup() {
 
   pinMode(S_LED1, OUTPUT);
   pinMode(S_LED2, OUTPUT);
-  //pinMode(S_LED3, OUTPUT);
-  //pinMode(S_LED4, OUTPUT);
-  //pinMode(S_LED5, OUTPUT);
+
+  //--------------------------------
+  Serial.begin(9600); // USB serial for debugging
+
+  // knob.encWrite(modeVal[mode]);
+
+  // Setup LED Indicators
+  pinMode(EXT_LED, OUTPUT);
+  pinMode(RET_LED, OUTPUT);
+
+  // Setup auxiliary fan pin
+  pinMode(AUX_FAN_PIN, OUTPUT);
+
+  // Setup KUKA inputs
+  pinMode(KUKA_PIN_1, INPUT_PULLUP);
+  KUKAIN1.attach(KUKA_PIN_1); // Attach knob button
+  KUKAIN1.interval(DEBOUNCE_INTERVAL);
+  pinMode(KUKA_PIN_2, INPUT_PULLUP);
+  KUKAIN2.attach(KUKA_PIN_2); // Attach knob button
+  KUKAIN2.interval(DEBOUNCE_INTERVAL);
+
+  updateMode(EXTRUDE_MODE);
 }
 
 
@@ -100,16 +197,19 @@ void loop() {
   digitalWrite(MotorStp_A, HIGH);
 
   delayMicroseconds(sp_param + MS_Button + MS_Ur);
-
-  //delayMicroseconds(sp_param + MS_Button);
-  //delayMicroseconds(sp_param);
-
+    
   digitalWrite(MotorStp_A, LOW);
 
   delayMicroseconds(sp_param + MS_Button + MS_Ur);
 
-  //delayMicroseconds(sp_param + MS_Button);
-  //delayMicroseconds(sp_param);
+  // -------------------------------
+  //checkBtn();
+  //checkKnob();
+  checkKUKA();
+  if (retracting && (sinceRetract > RETRACT_DURATION) && !(btnHeld))
+  {
+	  stopRetract(); 
+  }
 }
 
 void ButtonChangeMotorState()
