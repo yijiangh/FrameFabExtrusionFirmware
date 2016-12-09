@@ -47,7 +47,7 @@ void Stepper::setSpeed(float speed, bool run)
 	usPerStep = (int)(_MM_PER_STEP / speed * 1E6f);
 	if (run)
 	{
-		SetTimer();
+		setTimer();
 	}
 }
 
@@ -55,7 +55,7 @@ bool stepOn;
 void STEPISR()
 {
 	stepOn = !stepOn;
-	digitalWrite(_stepPin, stepOn);
+	digitalWrite(STEP_PIN, stepOn);
 }
 
 void Stepper::setTimer()

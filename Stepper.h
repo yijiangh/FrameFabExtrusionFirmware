@@ -7,9 +7,10 @@
 #ifndef Stepper_h
 #define Stepper_h
 
-#include <array>
+//#include <array>
 #include <arduino.h>
 #include <TimerObject.h>
+#include "Pins.h"
 
 class Stepper
 {
