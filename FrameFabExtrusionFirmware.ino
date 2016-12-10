@@ -26,6 +26,13 @@
  * - ElapseMillis	 (https://github.com/pfeerick/elapsedMillis)
  */
 
+#include <RunningStatistics.h>
+#include <FloatDefine.h>
+#include <FilterTwoPole.h>
+#include <Filters.h>
+#include <FilterOnePole.h>
+#include <FilterDerivative.h>
+
 #include <elapsedMillis.h>
 #include <TimerObject.h>
 #include <Bounce2.h>
@@ -64,6 +71,9 @@ int MS_Ur     = 0;
 const int RETRACT_DURATION = (int)(1E3f * RETRACT_LENGTH / RETRACT_SPEED);
 
 // OBJECTS
+Button button_enable();
+Button button_inv();
+
 Stepper stepper(
 	STEP_PIN,
 	DIR_PIN,
@@ -72,10 +82,11 @@ Stepper stepper(
 
 // KUKA Inputs
 // Treat them as switches to be debounced
-Bounce KUKAIN1 = Bounce();
-Bounce KUKAIN2 = Bounce();
+Bounce kuka_enable = Bounce();
+Bounce kuka_inv    = Bounce();
 
 // STATE VARIABLES
+
 bool extruding = false;
 bool retracting = false;
 bool btnHeld = false;
@@ -95,30 +106,41 @@ void updateMode(int _mode)
 	//}
 }
 
-void checkKUKA() 
+void CheckKUKAEnable() 
 {
-	if (KUKAIN1.update()) 
+	if (kuka_enable.update()) 
 	{
-		if (KUKAIN1.read()) 
+		if (kuka_enable.read())
 		{ 
-			startExtrude(); 
+			StartExtrude(); 
 		}
 		else 
-		{ 
-			startRetract(); 
+		{
+			StartRetract(); 
 		}
 	}
 }
 
-void startExtrude() 
+void CheckKUKAInv()
 {
-	stopRetract(); // if at all
+	if (kuka_inv.update())
+	{
+		if (kuka_inv.read())
+		{
+			//change motor direction
+		}
+	}
+}
+
+void StartExtrude()
+{
+	StopRetract(); // if at all
 	extruding = true;
 	digitalWrite(EXT_LED, HIGH);
 	stepper.enable();
 }
 
-void startRetract() 
+void StartRetract() 
 {
 	extruding = false;
 	retracting = true;
@@ -130,9 +152,10 @@ void startRetract()
 	sinceRetract = 0;
 }
 
-void stopRetract() 
+void StopRetract() 
 {
-	if (retracting) {
+	if (retracting) 
+	{
 		retracting = false;
 		digitalWrite(RET_LED, LOW);
 		stepper.setDir(1);
@@ -141,7 +164,8 @@ void stopRetract()
 	}
 }
 
-void setup() {
+void setup() 
+{
   //Serial.begin(9600);
   
   pinMode(MotorDir_A, OUTPUT);
@@ -165,16 +189,14 @@ void setup() {
   pinMode(EXT_LED, OUTPUT);
   pinMode(RET_LED, OUTPUT);
 
-  // Setup auxiliary fan pin
-  pinMode(AUX_FAN_PIN, OUTPUT);
-
   // Setup KUKA inputs
-  pinMode(KUKA_PIN_1, INPUT_PULLUP);
-  KUKAIN1.attach(KUKA_PIN_1); // Attach knob button
-  KUKAIN1.interval(DEBOUNCE_INTERVAL);
-  pinMode(KUKA_PIN_2, INPUT_PULLUP);
-  KUKAIN2.attach(KUKA_PIN_2); // Attach knob button
-  KUKAIN2.interval(DEBOUNCE_INTERVAL);
+  pinMode(KUKA_ENABLE, INPUT_PULLUP);
+  kuka_enable.attach(KUKA_ENABLE); // Attach knob button
+  kuka_enable.interval(DEBOUNCE_INTERVAL);
+  
+  pinMode(KUKA_INV, INPUT_PULLUP);
+  kuka_inv.attach(KUKA_INV);	   // Attach knob button
+  kuka_inv.interval(DEBOUNCE_INTERVAL);
 
   updateMode(EXTRUDE_MODE);
 }

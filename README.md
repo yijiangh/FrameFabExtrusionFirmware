@@ -15,10 +15,7 @@
 	- Dig[1] : inverse extrusion
 - Reads Analog signal from KUKA Arm to control motor feedrate
 
-Note: the manual and automatic motor control can
- * interrupt each other, enabling user to manually 
- * control the motor while the firmware is listening 
- * to KUKA's signal.
+Note: the manual and automatic motor control can interrupt each other, enabling user to manually control the motor while the firmware is listening to KUKA's signal.
 
 ##Dependencies:
 - [Bounce2 library](https://github.com/thomasfredericks/Bounce2)
