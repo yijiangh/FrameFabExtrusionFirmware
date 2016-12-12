@@ -72,7 +72,6 @@ Bounce kuka_inv    = Bounce();
 AnalogReader kuka_analog(KUKA_ANALOG, FILTER_FREQUENCY);
 
 // STATE VARIABLES
-
 bool extruding = false;
 bool retracting = false;
 bool btn_held = false;
@@ -80,6 +79,10 @@ float last_potm_val = 0;
 float last_kanalog_val = 0;
 long  last_btn_press;
 elapsedMillis since_retract;
+
+// TEMPORAL STATE VARIABLES (PRETTY DUMB)
+int last_kuka_enable_val = 0;
+int last_kuka_inv_val = 0;
 
 void updateMode(int _mode) 
 {
@@ -102,20 +105,31 @@ void CheckKUKAEnable()
 	// turn on /w off motor
 	if (kuka_enable.update())
 	{
-		//Serial.println("change!");
+		if (kuka_enable.read())
+		{
+			StartExtrude();
+		}
+		else
+		{
+			StartRetract();
+		}
 	}
 
-	if (kuka_enable.rose())
-	{ 
-		StartExtrude(); 
-		msg1 = 1;
-	}
+	//int kuka_enable_val = digitalRead(KUKA_ENABLE);
 
-	if(kuka_enable.fell())
-	{
-		StopExtrude();
-		msg2 = 1;
-	}
+	//// kuka_enable.rose()
+	//if (0 == last_kuka_enable_val && 1 == kuka_enable_val)
+	//{ 
+	//	StartExtrude(); 
+	//}
+
+	//// kuka_enable.fell()
+	//if(1 == last_kuka_enable_val && 0 == kuka_enable_val)
+	//{
+	//	StopExtrude();
+	//}
+
+	//last_kuka_enable_val = kuka_enable_val;
 }
 
 void CheckKUKAInv()
@@ -218,7 +232,7 @@ void StartRetract()
 	digitalWrite(EXT_LED, LOW);
 	digitalWrite(RET_LED, HIGH);
 	stepper.SetSpeed(RETRACT_SPEED);
-	stepper.SetDir(0);
+	stepper.SetDir(1);
 	stepper.Enable();
 	since_retract = 0;
 }
@@ -252,17 +266,18 @@ void setup()
   pinMode(EXT_LED, OUTPUT);
   pinMode(RET_LED, OUTPUT);
 
-  //// Setup KUKA inputs
-  //pinMode(KUKA_ENABLE, INPUT);
+  // Setup KUKA inputs
+  pinMode(KUKA_ENABLE, INPUT);
   //kuka_enable.attach(KUKA_ENABLE); // Attach knob button
-  //kuka_enable.interval(5);
-  //
-  //pinMode(KUKA_INV, INPUT);
-  //kuka_inv.attach(KUKA_INV);	   // Attach knob button
-  //kuka_inv.interval(DEBOUNCE_INTERVAL);
+  //kuka_enable.interval(DEBOUNCE_INTERVAL);
 
-  //pinMode(DIR_PIN, OUTPUT);
-  //pinMode(STEP_PIN, OUTPUT);
+  pinMode(KUKA_INV, INPUT);
+  kuka_inv.attach(KUKA_INV);	   // Attach knob button
+  kuka_inv.interval(DEBOUNCE_INTERVAL);
+
+  // Setup Motor control pins
+  pinMode(DIR_PIN, OUTPUT);
+  pinMode(STEP_PIN, OUTPUT);
 
   updateMode(EXTRUDE_MODE);
 }
@@ -273,13 +288,13 @@ void loop()
 	CheckBtnInv();
 	CheckPotentiometer();
 	
-	// CheckKUKAEnable();
+	CheckKUKAEnable();
 	// CheckKUKAInv();
 
 	stepper.Update();
 
-	//if (retracting && (since_retract > RETRACT_DURATION))
-	//{
-	//	StopRetract();
-	//}
+	if (retracting && (since_retract > RETRACT_DURATION))
+	{
+		StopRetract();
+	}
 }
