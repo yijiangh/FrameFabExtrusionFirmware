@@ -17,8 +17,8 @@ Modified by Yijiang Huang
 
 // Display, Interface Options
 #define DISPBAUD 9600
-#define LONG_PRESS_TIME 300
 #define DEBOUNCE_INTERVAL 5 // in ms
+#define FILTER_FREQUENCY  5 // filters out change faster than 5 HZ
 
 // Extrusion Options
 #define MM_PER_STEP 0.00345 // Calibrated from several measurements

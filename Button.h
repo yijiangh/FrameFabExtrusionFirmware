@@ -2,7 +2,7 @@
 	Button.h - A class for pushbutton.
 	Created by Yijiang Huang
 */
-
+#include <Arduino.h>
 #include <Bounce2.h>
 
 #ifndef Button_h

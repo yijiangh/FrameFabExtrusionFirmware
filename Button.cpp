@@ -31,5 +31,5 @@ bool Button::BtnChanged()
 // Returns true if button is currently depressed
 bool Button::BtnPushed() 
 {
-	return btn_->read();
+	return !btn_->read();
 }

@@ -7,7 +7,6 @@
 #ifndef Stepper_h
 #define Stepper_h
 
-//#include <array>
 #include <arduino.h>
 #include <TimerObject.h>
 #include "Pins.h"
@@ -18,26 +17,35 @@ public:
 	Stepper(
 		int stepPin,
 		int dirPin,
-		int mStepPin,
 		float mm_per_step,
-		int initial_speed =1,
+		TimerObject *ptimer,
+		int initial_speed = 200,
 		bool initial_dir = true);
 	~Stepper();
 
-	void enable();
-	void disable();
-	void setSpeed(float speed, bool run = true);
-	void setDir(bool dir);
-	void setTimer();
+	void Enable();
+	void Disable();
+	void SetSpeed(float speed, bool run = true);
+	void SetTimer();
+	void SetDir(bool dir);
+	void Update();
+
+	bool GetDir()	{ return current_dir_; }
+	int	 GetSpeed() { return speed_; }
 
 private:
-	const int _stepPin;
-	const int _dirPin;
-	const int _mStepPin;
-	const float _MM_PER_STEP;
-	int usPerStep;
+	int  ConvertSpeed();
+
+private:
+	const int	step_pin_;
+	const int	dir_pin_;
+	const float mm_per_step_;
+	int   us_per_step_;
 	
-	TimerObject *stepTimer;
+	float speed_;
+	bool  current_dir_;
+	
+	TimerObject *pstep_timer_;
 };
 
 #endif

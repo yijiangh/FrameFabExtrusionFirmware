@@ -8,33 +8,23 @@ Created by Mitchell Gu
 
 // INDICATOR LEDS 
 // - extusion & retraction
-#define EXT_LED 18
-#define RET_LED 19
+#define EXT_LED 12
+#define RET_LED 13
 
 // BUTTONS
-#define BUTTON_ENABLE 4
-#define BUTTON_INV	  4
+#define BUTTON_ENABLE 11
+#define BUTTON_INV	  10
+
+// POTENTIOMETER
+#define POTENTIOMETER_PIN 0 // A0
 
 //STEPPER
-#define STEP_PIN 16
-#define DIR_PIN 17
-#define MSTEP_PIN 13
+#define STEP_PIN  5
+#define DIR_PIN   6
 
 // KUKA INPUT
-#define KUKA_ENABLE 8
-#define KUKA_INV    7
-
-//-------------------------------------
-#define MotorDir_A      6
-#define MotorStp_A      5
-#define MotorEna_A      4
-
-#define MotorStart_A    11
-#define MotorInvert_A   10
-#define UrInv           8
-#define UrStart         9
-
-#define S_LED1          3
-#define S_LED2          2
+#define KUKA_ENABLE 9
+#define KUKA_INV    8
+#define KUKA_ANALOG 1 // A1
 
 #endif
