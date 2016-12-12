@@ -37,7 +37,7 @@
 #include "Options.h"
 #include "Pins.h"
 #include "Stepper.h"
-#include "Potentiometer.h"
+#include "AnalogReader.h"
 #include "Button.h"
 
 // MODE INITIALIZATION
@@ -56,27 +56,29 @@ Button button_enable(BUTTON_ENABLE, DEBOUNCE_INTERVAL);
 Button button_inv(BUTTON_INV, DEBOUNCE_INTERVAL);
 
 // Manual control potentiometer
-PotentioMeter potentiometer(POTENTIOMETER_PIN, FILTER_FREQUENCY);
+AnalogReader potentiometer(POTENTIOMETER_PIN, FILTER_FREQUENCY);
 
-TimerObject *pstep_timer = new TimerObject(200);
-
+TimerObject *ptimer = new TimerObject(200);
 Stepper stepper(
 	STEP_PIN,
 	DIR_PIN,
 	MM_PER_STEP * MM_OUT_OVER_IN,
-	pstep_timer);
+	ptimer);
 
 // KUKA Inputs
 // Treat them as switches to be debounced
 Bounce kuka_enable = Bounce();
 Bounce kuka_inv    = Bounce();
+AnalogReader kuka_analog(KUKA_ANALOG, FILTER_FREQUENCY);
 
 // STATE VARIABLES
 
 bool extruding = false;
 bool retracting = false;
 bool btn_held = false;
-long last_btn_press;
+float last_potm_val = 0;
+float last_kanalog_val = 0;
+long  last_btn_press;
 elapsedMillis since_retract;
 
 void updateMode(int _mode) 
@@ -94,17 +96,20 @@ void updateMode(int _mode)
 
 void CheckKUKAEnable() 
 {
-	if (kuka_enable.update()) 
-	{
-		if (kuka_enable.read())
-		{ 
-			StartExtrude(); 
-		}
-		else 
-		{
-			StartRetract(); 
-		}
-	}
+	//Serial.println(kuka_enable.update());
+	kuka_enable.update();
+	Serial.println(kuka_enable.read());
+	//if (kuka_enable.update()) 
+	//{
+	//	if (kuka_enable.read())
+	//	{ 
+	//		StartExtrude(); 
+	//	}
+	//	else 
+	//	{
+	//		StartRetract(); 
+	//	}
+	//}
 }
 
 void CheckKUKAInv()
@@ -122,8 +127,6 @@ void CheckBtnEnable()
 {
 	if (button_enable.BtnChanged())
 	{
-		//bool msg = button_enable.BtnPushed();
-
 		// If button state changed
 		if (button_enable.BtnPushed())
 		{
@@ -153,10 +156,32 @@ void CheckBtnInv()
 
 void CheckPotentiometer()
 {
-	// change motor speed by potentiometer
-	float ratio = potentiometer.GetAnalog() / 1023;
+	if (extruding)
+	{
+		// change motor speed by potentiometer
+		float ratio = (float)potentiometer.GetAnalog() / (float)1023;
 
-	stepper.SetSpeed(ratio * stepper.GetSpeed());
+		if (last_potm_val != ratio)
+		{
+			last_potm_val = ratio;
+			stepper.SetPotmRatio(ratio);
+		}
+	}
+}
+
+void CheckKUKAAnalog()
+{
+	if (extruding)
+	{
+		// change motor speed by kuka analog input, the higher the faster
+		float ratio = 1 - (float)kuka_analog.GetAnalog() / (float)1023;
+
+		if (last_kanalog_val != ratio)
+		{
+			last_kanalog_val = ratio;
+			stepper.SetKAnalogRatio(ratio);
+		}
+	}
 }
 
 void StartExtrude()
@@ -215,20 +240,20 @@ void StopRetract()
 
 void setup() 
 {
-  //Serial.begin(9600); // USB serial for debugging
+  Serial.begin(9600); // USB serial for debugging
 
   // Setup LED Indicators
   pinMode(EXT_LED, OUTPUT);
   pinMode(RET_LED, OUTPUT);
 
   // Setup KUKA inputs
-  //pinMode(KUKA_ENABLE, INPUT_PULLUP);
-  //kuka_enable.attach(KUKA_ENABLE); // Attach knob button
-  //kuka_enable.interval(DEBOUNCE_INTERVAL);
-  //
-  //pinMode(KUKA_INV, INPUT_PULLUP);
-  //kuka_inv.attach(KUKA_INV);	   // Attach knob button
-  //kuka_inv.interval(DEBOUNCE_INTERVAL);
+  pinMode(KUKA_ENABLE, INPUT);
+  kuka_enable.attach(KUKA_ENABLE); // Attach knob button
+  kuka_enable.interval(DEBOUNCE_INTERVAL);
+  
+  pinMode(KUKA_INV, INPUT_PULLUP);
+  kuka_inv.attach(KUKA_INV);	   // Attach knob button
+  kuka_inv.interval(DEBOUNCE_INTERVAL);
 
   pinMode(DIR_PIN, OUTPUT);
   pinMode(STEP_PIN, OUTPUT);
@@ -239,14 +264,13 @@ void setup()
 void loop()
 {
 	CheckBtnEnable();
-
-	stepper.Update();
-	//CheckBtnInv();
-	//
-	//// CheckKUKAEnable();
+	CheckBtnInv();
+	CheckPotentiometer();
+	CheckKUKAEnable();
 	//// CheckKUKAInv();
 
-	//CheckPotentiometer();
+	stepper.Update();
+
 	//if (retracting && (since_retract > RETRACT_DURATION))
 	//{
 	//	StopRetract();

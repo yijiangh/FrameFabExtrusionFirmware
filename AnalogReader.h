@@ -14,10 +14,10 @@ Created by Yijiang Huang
 
 #include <Filters.h>
 
-class PotentioMeter
+class AnalogReader
 {
 public:
-	PotentioMeter(
+	AnalogReader(
 		int input_pin,
 		float filter_frequency = 5)
 	{
@@ -25,12 +25,12 @@ public:
 		rc_filter_ = new FilterOnePole(LOWPASS, filter_frequency);
 	}
 
-	~PotentioMeter() { delete rc_filter_; };
+	~AnalogReader() { delete rc_filter_; };
 
 	// return value 0 ~ 1023
 	int GetAnalog()
 	{
-		rc_filter_->input(analogRead(input_pin_));
+		return rc_filter_->input((float)analogRead(input_pin_));
 	}
 
 private:

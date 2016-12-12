@@ -9,15 +9,17 @@ Stepper::Stepper(
 	bool initialDir):
 	step_pin_(stepPin),
 	dir_pin_(dirPin),
-	mm_per_step_(mmPerStep)
+	mm_per_step_(mmPerStep),
+	potm_ratio_(0),
+	kanalog_ratio_(0)
 {
 	// Initialize Pins
 	pinMode(step_pin_,  OUTPUT);
 	pinMode(dir_pin_,   OUTPUT);
 
-	SetSpeed(initialSpeed, false);
-
 	pstep_timer_ = ptimer;
+
+	SetSpeed(initialSpeed, false);
 
 	digitalWrite(dir_pin_, initialDir);
 }
@@ -41,10 +43,23 @@ void Stepper::SetSpeed(float speed, bool run)
 {
 	speed_ = speed;
 	us_per_step_ = ConvertSpeed();
+
 	if (run)
 	{
 		SetTimer();
 	}
+}
+
+void Stepper::SetPotmRatio(float ratio)
+{
+	potm_ratio_ = ratio;
+	SetSpeed(speed_, true);
+}
+
+void Stepper::SetKAnalogRatio(float ratio)
+{
+	kanalog_ratio_ = ratio;
+	SetSpeed(speed_, true);
 }
 
 bool step_on;
@@ -57,8 +72,12 @@ void STEPISR()
 void Stepper::SetTimer()
 {
 	pstep_timer_->Stop();
+	
 	//pstep_timer_->setInterval(us_per_step_ / 2);
-	pstep_timer_->setInterval(us_per_step_);
+
+	pstep_timer_->setInterval(us_per_step_  
+		+ (int) POTM_SPEED_INCREASE		* potm_ratio_
+		+ (int) KANALOG_SPEED_INCREASE  * kanalog_ratio_);
 	pstep_timer_->setOnTimer(&STEPISR);
 	pstep_timer_->Start();
 }

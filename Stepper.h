@@ -10,6 +10,7 @@
 #include <arduino.h>
 #include <TimerObject.h>
 #include "Pins.h"
+#include "Options.h"
 
 class Stepper
 {
@@ -19,19 +20,23 @@ public:
 		int dirPin,
 		float mm_per_step,
 		TimerObject *ptimer,
-		int initial_speed = 200,
-		bool initial_dir = true);
+		int   initial_speed = 200,
+		bool  initial_dir = true);
 	~Stepper();
 
 	void Enable();
 	void Disable();
+	
 	void SetSpeed(float speed, bool run = true);
+	void SetPotmRatio(float ratio);
+	void SetKAnalogRatio(float ratio);
+
 	void SetTimer();
 	void SetDir(bool dir);
 	void Update();
 
 	bool GetDir()	{ return current_dir_; }
-	int	 GetSpeed() { return speed_; }
+	int	 GetUsPerStep() { return us_per_step_; }
 
 private:
 	int  ConvertSpeed();
@@ -44,7 +49,9 @@ private:
 	
 	float speed_;
 	bool  current_dir_;
-	
+	float potm_ratio_;
+	float kanalog_ratio_;
+
 	TimerObject *pstep_timer_;
 };
 

@@ -26,4 +26,6 @@ Modified by Yijiang Huang
 #define RETRACT_SPEED 10	// mm per s
 #define RETRACT_LENGTH 3	// mm
 
+#define POTM_SPEED_INCREASE		500
+#define KANALOG_SPEED_INCREASE	1000
 #endif
