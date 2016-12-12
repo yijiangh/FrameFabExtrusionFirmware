@@ -29,9 +29,9 @@ Stepper::~Stepper()
 	//delete pstep_timer_;
 }
 
-void Stepper::Enable()
+void Stepper::Enable(bool incre)
 {
-	SetTimer();
+	SetTimer(incre);
 }
 
 void Stepper::Disable()
@@ -39,14 +39,14 @@ void Stepper::Disable()
 	pstep_timer_->Stop();
 }
 
-void Stepper::SetSpeed(float speed, bool run)
+void Stepper::SetSpeed(float speed, bool run, bool incre)
 {
 	speed_ = speed;
 	us_per_step_ = ConvertSpeed();
 
 	if (run)
 	{
-		SetTimer();
+		SetTimer(incre);
 	}
 }
 
@@ -58,7 +58,8 @@ void Stepper::SetPotmRatio(float ratio)
 
 void Stepper::SetKAnalogRatio(float ratio)
 {
-	kanalog_ratio_ = ratio;
+	//kanalog_ratio_ = ratio;
+	kanalog_ratio_ = 0;
 	SetSpeed(speed_, true);
 }
 
@@ -69,15 +70,23 @@ void STEPISR()
 	digitalWrite(STEP_PIN, step_on);
 }
 
-void Stepper::SetTimer()
+void Stepper::SetTimer(bool incre)
 {
 	pstep_timer_->Stop();
 	
 	//pstep_timer_->setInterval(us_per_step_ / 2);
 
-	pstep_timer_->setInterval(us_per_step_  
-		+ (int) POTM_SPEED_INCREASE		* potm_ratio_
-		+ (int) KANALOG_SPEED_INCREASE  * kanalog_ratio_);
+	if (incre)
+	{
+		pstep_timer_->setInterval(us_per_step_
+			+ (int)POTM_SPEED_INCREASE		* potm_ratio_
+			+ (int)KANALOG_SPEED_INCREASE  * kanalog_ratio_);
+	}
+	else
+	{
+		pstep_timer_->setInterval(us_per_step_);
+	}
+
 	pstep_timer_->setOnTimer(&STEPISR);
 	pstep_timer_->Start();
 }

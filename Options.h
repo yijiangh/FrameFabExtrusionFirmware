@@ -18,14 +18,22 @@ Modified by Yijiang Huang
 // Display, Interface Options
 #define DISPBAUD 9600
 #define DEBOUNCE_INTERVAL 5 // in ms
-#define FILTER_FREQUENCY  5 // filters out change faster than 5 HZ
+#define FILTER_FREQUENCY  5 // filters out analog change faster than 5 HZ
 
-// Extrusion Options
+// Extrusion Options 
+// - these parameters are not well-caliberated now
+// - parameter tuning base on guess-and-check
 #define MM_PER_STEP 0.00345 // Calibrated from several measurements
 #define MM_OUT_OVER_IN 1.90 // How many mm come out when 1 mm goes in, depends on nozzle, calibrated from measurement
-#define RETRACT_SPEED 10	// mm per s
-#define RETRACT_LENGTH 3	// mm
 
-#define POTM_SPEED_INCREASE		500
+#define EXTRUDE_INITAL_SPEED 400
+#define RETRACT_SPEED	 	 100
+#define RETRACT_LENGTH		 3	// mm
+
+#define POTM_SPEED_INCREASE		3000
 #define KANALOG_SPEED_INCREASE	1000
+
+#define FORTH_DIRECTION 0 // extrude    direction
+#define BACK_DIRECTION	1 // retraction direction
+
 #endif

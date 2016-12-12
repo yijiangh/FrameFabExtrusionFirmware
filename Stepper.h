@@ -20,18 +20,18 @@ public:
 		int dirPin,
 		float mm_per_step,
 		TimerObject *ptimer,
-		int   initial_speed = 200,
+		int   initial_speed = 500,
 		bool  initial_dir = true);
 	~Stepper();
 
-	void Enable();
+	void Enable(bool incre = true);
 	void Disable();
 	
-	void SetSpeed(float speed, bool run = true);
+	void SetSpeed(float speed, bool run = true, bool incre = true);
 	void SetPotmRatio(float ratio);
 	void SetKAnalogRatio(float ratio);
 
-	void SetTimer();
+	void SetTimer(bool incre);
 	void SetDir(bool dir);
 	void Update();
 
@@ -45,7 +45,7 @@ private:
 	const int	step_pin_;
 	const int	dir_pin_;
 	const float mm_per_step_;
-	int   us_per_step_;
+	int			us_per_step_;
 	
 	float speed_;
 	bool  current_dir_;
