@@ -94,22 +94,28 @@ void updateMode(int _mode)
 	//}
 }
 
+int msg1 = 0;
+int msg2 = 0;
+
 void CheckKUKAEnable() 
 {
-	//Serial.println(kuka_enable.update());
-	kuka_enable.update();
-	Serial.println(kuka_enable.read());
-	//if (kuka_enable.update()) 
-	//{
-	//	if (kuka_enable.read())
-	//	{ 
-	//		StartExtrude(); 
-	//	}
-	//	else 
-	//	{
-	//		StartRetract(); 
-	//	}
-	//}
+	// turn on /w off motor
+	if (kuka_enable.update())
+	{
+		//Serial.println("change!");
+	}
+
+	if (kuka_enable.rose())
+	{ 
+		StartExtrude(); 
+		msg1 = 1;
+	}
+
+	if(kuka_enable.fell())
+	{
+		StopExtrude();
+		msg2 = 1;
+	}
 }
 
 void CheckKUKAInv()
@@ -246,17 +252,17 @@ void setup()
   pinMode(EXT_LED, OUTPUT);
   pinMode(RET_LED, OUTPUT);
 
-  // Setup KUKA inputs
-  pinMode(KUKA_ENABLE, INPUT);
-  kuka_enable.attach(KUKA_ENABLE); // Attach knob button
-  kuka_enable.interval(DEBOUNCE_INTERVAL);
-  
-  pinMode(KUKA_INV, INPUT_PULLUP);
-  kuka_inv.attach(KUKA_INV);	   // Attach knob button
-  kuka_inv.interval(DEBOUNCE_INTERVAL);
+  //// Setup KUKA inputs
+  //pinMode(KUKA_ENABLE, INPUT);
+  //kuka_enable.attach(KUKA_ENABLE); // Attach knob button
+  //kuka_enable.interval(5);
+  //
+  //pinMode(KUKA_INV, INPUT);
+  //kuka_inv.attach(KUKA_INV);	   // Attach knob button
+  //kuka_inv.interval(DEBOUNCE_INTERVAL);
 
-  pinMode(DIR_PIN, OUTPUT);
-  pinMode(STEP_PIN, OUTPUT);
+  //pinMode(DIR_PIN, OUTPUT);
+  //pinMode(STEP_PIN, OUTPUT);
 
   updateMode(EXTRUDE_MODE);
 }
@@ -266,8 +272,9 @@ void loop()
 	CheckBtnEnable();
 	CheckBtnInv();
 	CheckPotentiometer();
-	CheckKUKAEnable();
-	//// CheckKUKAInv();
+	
+	// CheckKUKAEnable();
+	// CheckKUKAInv();
 
 	stepper.Update();
 
