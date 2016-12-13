@@ -8,8 +8,8 @@ Created by Mitchell Gu
 
 // INDICATOR LEDS 
 // - extusion & retraction
-#define EXT_LED 12
-#define RET_LED 13
+#define EXT_LED 3
+#define RET_LED 2
 
 // BUTTONS
 #define BUTTON_ENABLE 11
@@ -19,6 +19,7 @@ Created by Mitchell Gu
 #define POTENTIOMETER_PIN 0 // A0
 
 //STEPPER
+#define ENA_PIN	  4
 #define STEP_PIN  5
 #define DIR_PIN   6
 

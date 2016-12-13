@@ -143,7 +143,6 @@ void CheckBtnEnable()
 			}
 			else
 			{
-				Serial.println("stop extrude!");
 				StopExtrude();
 			}
 		}
@@ -217,8 +216,17 @@ void StartInvExtrude()
 	if (extruding)
 	{
 		//StopRetract(); // if at all
-		digitalWrite(EXT_LED, HIGH);
 		stepper.SetDir(!stepper.GetDir());
+		if (FORTH_DIRECTION == stepper.GetDir())
+		{
+			digitalWrite(RET_LED, LOW);
+			digitalWrite(EXT_LED, HIGH);
+		}
+		else
+		{
+			digitalWrite(RET_LED, HIGH);
+			digitalWrite(EXT_LED, LOW);
+		}
 	}
 }
 
@@ -256,6 +264,8 @@ void StopExtrude()
 	if(extruding)
 	{
 		extruding = false;
+		digitalWrite(EXT_LED, LOW);
+		digitalWrite(RET_LED, LOW);
 		stepper.Disable();
 	}
 }
@@ -288,7 +298,7 @@ void StopRollback()
 
 void setup() 
 {
-  Serial.begin(9600); // USB serial for debugging
+  //Serial.begin(9600); // USB serial for debugging
 
   // Setup LED Indicators
   pinMode(EXT_LED, OUTPUT);
@@ -306,6 +316,9 @@ void setup()
   // Setup Motor control pins
   pinMode(DIR_PIN, OUTPUT);
   pinMode(STEP_PIN, OUTPUT);
+  pinMode(ENA_PIN, OUTPUT);
+
+  digitalWrite(ENA_PIN, LOW);
 
   updateMode(EXTRUDE_MODE, false);
 }
