@@ -30,7 +30,7 @@ Modified by Yijiang Huang
 #define RETRACT_SPEED	 	 100
 #define RETRACT_LENGTH		 3	// mm
 
-#define POTM_SPEED_INCREASE		3000
+#define POTM_SPEED_INCREASE		100
 #define KANALOG_SPEED_INCREASE	1000
 
 #define FORTH_DIRECTION 0 // extrude    direction

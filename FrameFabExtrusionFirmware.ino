@@ -44,7 +44,8 @@
 #include "Button.h"
 
 // Retract duration in us should be retract length (mm) divided by retract speed (mm per s) * 1E3f
-const int RETRACT_DURATION = (int) 500;
+const int RETRACT_DURATION  = (int) 300;
+const int ROLLBACK_DURATION = (int) 300;
 //const int RETRACT_DURATION = (int)(1E3f * RETRACT_LENGTH / RETRACT_SPEED);
 
 // OBJECTS
@@ -163,6 +164,11 @@ void CheckBtnInv()
 
 void CheckPotentiometer()
 {
+	//milestone 1: x layer - potent ratio1 = 0.64
+
+	//float ratio1 = (float)potentiometer.GetAnalog() / (float)1023;
+	//Serial.println(ratio1);
+
 	if (extruding)
 	{
 		// change motor speed by potentiometer
@@ -298,7 +304,7 @@ void StopRollback()
 
 void setup() 
 {
-  //Serial.begin(9600); // USB serial for debugging
+  Serial.begin(9600); // USB serial for debugging
 
   // Setup LED Indicators
   pinMode(EXT_LED, OUTPUT);
@@ -338,7 +344,7 @@ void loop()
 		StopRetract();
 	}
 
-	if (rollback && (since_rollback > RETRACT_DURATION))
+	if (rollback && (since_rollback > ROLLBACK_DURATION))
 	{
 		StopRollback();
 	}
