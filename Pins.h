@@ -19,9 +19,11 @@ Created by Mitchell Gu
 #define POTENTIOMETER_PIN 0 // A0
 
 //STEPPER
-#define ENA_PIN	  4
-#define STEP_PIN  5
-#define DIR_PIN   6
+#define RESET_PIN   0
+#define SLEEP_PIN   1
+#define MSTEP_PIN	4
+#define STEP_PIN	5
+#define DIR_PIN		6
 
 // KUKA INPUT
 #define KUKA_ENABLE 9

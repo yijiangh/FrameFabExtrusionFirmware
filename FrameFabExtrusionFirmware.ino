@@ -60,6 +60,9 @@ TimerObject *ptimer = new TimerObject(EXTRUDE_INITAL_SPEED);
 Stepper stepper(
 	STEP_PIN,
 	DIR_PIN,
+	MSTEP_PIN,
+	RESET_PIN,
+	SLEEP_PIN,
 	MM_PER_STEP * MM_OUT_OVER_IN,
 	ptimer,
 	EXTRUDE_INITAL_SPEED);
@@ -165,6 +168,10 @@ void CheckBtnInv()
 void CheckPotentiometer()
 {
 	//milestone 1: x layer - potent ratio1 = 0.64
+	
+	//milestone 2: 0.97
+
+	//milestone 3: 0.73
 
 	//float ratio1 = (float)potentiometer.GetAnalog() / (float)1023;
 	//Serial.println(ratio1);
@@ -188,7 +195,6 @@ void CheckKUKAAnalog()
 	{
 		// change motor speed by kuka analog input, the higher the faster
 		float ratio = 1 - (float)kuka_analog.GetAnalog() / (float)1023;
-		//Serial.println(ratio);
 
 		if (last_kanalog_val != ratio)
 		{
@@ -246,6 +252,7 @@ void StartRetract()
 
 	stepper.SetDir(BACK_DIRECTION);
 	stepper.SetSpeed(RETRACT_SPEED, true, false);
+	stepper.Enable(false);
 	since_retract = 0;
 
 	// flag for rollback
@@ -261,7 +268,8 @@ void StartRollback()
 	digitalWrite(RET_LED, HIGH);
 	
 	stepper.SetDir(FORTH_DIRECTION);
-	stepper.SetSpeed(RETRACT_SPEED, true, false);
+	stepper.SetSpeed(ROLLBACK_SPEED, true, false);
+	stepper.Enable(false);
 	since_rollback = 0;
 }
 
@@ -304,7 +312,7 @@ void StopRollback()
 
 void setup() 
 {
-  Serial.begin(9600); // USB serial for debugging
+  //Serial.begin(9600); // USB serial for debugging
 
   // Setup LED Indicators
   pinMode(EXT_LED, OUTPUT);
@@ -319,13 +327,6 @@ void setup()
   kuka_inv.attach(KUKA_INV);	   // Attach knob button
   kuka_inv.interval(DEBOUNCE_INTERVAL);
 
-  // Setup Motor control pins
-  pinMode(DIR_PIN, OUTPUT);
-  pinMode(STEP_PIN, OUTPUT);
-  pinMode(ENA_PIN, OUTPUT);
-
-  digitalWrite(ENA_PIN, LOW);
-
   updateMode(EXTRUDE_MODE, false);
 }
 
@@ -333,7 +334,7 @@ void loop()
 {
 	CheckBtnEnable();
 	CheckBtnInv();
-	CheckPotentiometer();
+	//CheckPotentiometer();
 	
 	CheckKUKAEnable();
 	// CheckKUKAAnalog();

@@ -16,8 +16,11 @@ class Stepper
 {
 public:
 	Stepper(
-		int stepPin,
-		int dirPin,
+		int step_pin,
+		int dir_pin,
+		int mstep_pin,
+		int reset_pin,
+		int sleep_pin,
 		float mm_per_step,
 		TimerObject *ptimer,
 		int   initial_speed = 500,
@@ -44,6 +47,9 @@ private:
 private:
 	const int	step_pin_;
 	const int	dir_pin_;
+	const int	mstep_pin_;
+	const int	reset_pin_;
+	const int	sleep_pin_;
 	const float mm_per_step_;
 	int			us_per_step_;
 	

@@ -26,9 +26,11 @@ Modified by Yijiang Huang
 #define MM_PER_STEP 0.00345 // Calibrated from several measurements
 #define MM_OUT_OVER_IN 1.90 // How many mm come out when 1 mm goes in, depends on nozzle, calibrated from measurement
 
-#define EXTRUDE_INITAL_SPEED 400
-#define RETRACT_SPEED	 	 100
-#define RETRACT_LENGTH		 3	// mm
+#define EXTRUDE_INITAL_SPEED 800
+#define RETRACT_SPEED	 	 400
+#define ROLLBACK_SPEED		 400
+
+//#define RETRACT_LENGTH		 3	// mm
 
 #define POTM_SPEED_INCREASE		100
 #define KANALOG_SPEED_INCREASE	1000
